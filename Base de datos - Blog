@@ -1,0 +1,196 @@
+-- Create database
+CREATE DATABASE blog;
+GO
+
+-- Use the created database
+USE blog;
+GO
+
+-- Create table profiles
+CREATE TABLE profiles (
+    id INT PRIMARY KEY IDENTITY(1,1),
+    profile VARCHAR(20) NOT NULL,
+    description VARCHAR(100),
+    status BIT DEFAULT 1,
+    created_at DATETIME,
+    updated_at DATETIME NULL,
+    deleted_at DATETIME NULL
+);
+GO
+
+-- Create table users
+CREATE TABLE users (
+    id INT PRIMARY KEY IDENTITY(1,1),
+    username VARCHAR(50),
+    password VARCHAR(150),
+    status BIT,
+    profile INT NOT NULL,
+    created_at DATETIME,
+    updated_at DATETIME NULL,
+    deleted_at DATETIME NULL,
+    CONSTRAINT FK_Profile_User FOREIGN KEY (profile) REFERENCES profiles(id)
+);
+GO
+
+-- Create table userinfo
+CREATE TABLE userinfo (
+    id INT PRIMARY KEY,
+    name VARCHAR(50),
+    lastname VARCHAR(80),
+    birthday DATE NULL,
+    gender CHAR,
+    phone VARCHAR(15) NULL,
+    photo VARCHAR(250) NULL,
+    bio TEXT NULL,
+    website VARCHAR(255) NULL,
+    status BIT DEFAULT 1,
+    created_at DATETIME,
+    updated_at DATETIME NULL,
+    deleted_at DATETIME NULL,
+    CONSTRAINT FK_UserInfo_User FOREIGN KEY (id) REFERENCES users(id)
+);
+GO
+
+-- Create table categories
+CREATE TABLE categories (
+    id INT PRIMARY KEY IDENTITY(1,1),
+    category VARCHAR(50) NOT NULL,
+    description TEXT NULL,
+    status BIT DEFAULT 1
+);
+GO
+
+-- Create table posts
+CREATE TABLE posts (
+    id INT PRIMARY KEY IDENTITY(1,1),
+    category INT NOT NULL,
+    autor INT NOT NULL,
+    title VARCHAR(250) NOT NULL,
+    content TEXT NOT NULL,
+    status BIT DEFAULT 1,
+    created_at DATETIME,
+    updated_at DATETIME NULL,
+    deleted_at DATETIME NULL,
+    CONSTRAINT FK_Category_Post FOREIGN KEY (category) REFERENCES categories(id),
+    CONSTRAINT FK_Autor_Post FOREIGN KEY (autor) REFERENCES users(id)
+);
+GO
+
+-- Create table attachments
+CREATE TABLE attachments (
+    id INT PRIMARY KEY IDENTITY(1,1),
+    name VARCHAR(100) NOT NULL,
+    url VARCHAR(255) NOT NULL,
+    description VARCHAR(255) NULL
+);
+GO
+
+-- Create table attachments_posts
+CREATE TABLE attachments_posts (
+    id INT PRIMARY KEY IDENTITY(1,1),
+    post INT NOT NULL,
+    attachment INT NOT NULL,
+    CONSTRAINT FK_Post_Attachment FOREIGN KEY (post) REFERENCES posts(id),
+    CONSTRAINT FK_Attachment_AttachmentPost FOREIGN KEY (attachment) REFERENCES attachments(id)
+);
+GO
+
+-- Create table comments
+CREATE TABLE comments (
+    id INT PRIMARY KEY IDENTITY(1,1),
+    post INT NOT NULL,
+    message TEXT,
+    created_at DATETIME,
+    updated_at DATETIME NULL,
+    deleted_at DATETIME NULL,
+    CONSTRAINT FK_Post_Comment FOREIGN KEY (post) REFERENCES posts(id)
+);
+GO
+
+-- Create table products
+CREATE TABLE products (
+    id INT PRIMARY KEY IDENTITY(1,1),
+    name VARCHAR(150) NOT NULL,
+    CONSTRAINT Unique_Name_Product UNIQUE (name),
+    description TEXT NOT NULL,
+    purchase_price FLOAT NOT NULL,
+    unit_price FLOAT NOT NULL,
+    min_stock INT NOT NULL,
+    max_stock INT NOT NULL,
+    stock INT NOT NULL,
+    dimensions VARCHAR(150) NULL,
+    weigth FLOAT NULL,
+    observation VARCHAR(255) NULL,
+    status TINYINT DEFAULT 1,
+    category INT NOT NULL,
+    discontinued BIT DEFAULT 0,
+    created_at DATETIME,
+    updated_at DATETIME NULL,
+    deleted_at DATETIME NULL,
+    CONSTRAINT FK_Category_Product FOREIGN KEY (category) REFERENCES categories(id)
+);
+GO
+
+
+-- Insert data into profiles
+INSERT INTO profiles (profile, description, created_at)
+VALUES
+    ('Admin', 'Administrator profile', GETDATE()),
+    ('User', 'Regular user profile', GETDATE()),
+    ('Editor', 'Editor profile', GETDATE());
+
+-- Insert data into users
+INSERT INTO users (username, password, status, profile, created_at)
+VALUES
+    ('admin_user', 'admin_password', 1, 1, GETDATE()),
+    ('john_doe', 'john_password', 1, 2, GETDATE()),
+    ('editor1', 'editor_password', 1, 3, GETDATE());
+
+-- Insert data into userinfo
+INSERT INTO userinfo (id, name, lastname, birthday, gender, phone, photo, bio, website, created_at)
+VALUES
+    (1, 'Admin', 'User', '1990-01-01', 'M', '123456789', 'admin.jpg', 'Bio for admin', 'https://adminwebsite.com', GETDATE()),
+    (2, 'John', 'Doe', '1985-05-15', 'M', '987654321', 'john.jpg', 'Bio for John', 'https://johnswebsite.com', GETDATE()),
+    (3, 'Editor', 'One', '1992-08-20', 'F', '555111222', 'editor.jpg', 'Bio for Editor', 'https://editorwebsite.com', GETDATE());
+
+-- Insert data into categories
+INSERT INTO categories (category, description)
+VALUES
+    ('Technology', 'Tech-related posts'),
+    ('Travel', 'Posts about travel'),
+    ('Food', 'Food-related posts');
+
+-- Insert data into posts
+INSERT INTO posts (category, autor, title, content, created_at)
+VALUES
+    (1, 2, 'Introduction to SQL Server', 'This is a post about SQL Server.', GETDATE()),
+    (2, 3, 'Traveling Tips', 'Tips for a successful journey.', GETDATE()),
+    (3, 2, 'Delicious Recipes', 'Explore tasty recipes for any occasion.', GETDATE());
+
+-- Insert data into attachments
+INSERT INTO attachments (name, url, description)
+VALUES
+    ('Attachment 1', 'attachment1.jpg', 'Description for attachment 1'),
+    ('Attachment 2', 'attachment2.pdf', 'Description for attachment 2'),
+    ('Attachment 3', 'attachment3.png', 'Description for attachment 3');
+
+-- Insert data into attachments_posts
+INSERT INTO attachments_posts (post, attachment)
+VALUES
+    (1, 1),
+    (2, 2),
+    (3, 3);
+
+-- Insert data into comments
+INSERT INTO comments (post, message, created_at)
+VALUES
+    (1, 'Great post!', GETDATE()),
+    (2, 'I love these tips!', GETDATE()),
+    (3, 'Yummy recipes!', GETDATE());
+
+-- Insert data into products
+INSERT INTO products (name, description, purchase_price, unit_price, min_stock, max_stock, stock, dimensions, weigth, observation, category, discontinued, created_at)
+VALUES
+    ('Product 1', 'Description for Product 1', 10.99, 19.99, 50, 200, 100, '10x20x5', 0.5, 'Observation for Product 1', 1, 0, GETDATE()),
+    ('Product 2', 'Description for Product 2', 15.99, 29.99, 30, 150, 80, '8x15x5', 0.3, 'Observation for Product 2', 1, 1, GETDATE()),
+    ('Product 3', 'Description for Product 3', 8.99, 14.99, 40, 180, 120, '12x18x6', 0.7, 'Observation for Product 3', 2, 0, GETDATE());
